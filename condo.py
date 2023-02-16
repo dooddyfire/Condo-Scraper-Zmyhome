@@ -8,7 +8,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 #Fix
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
-
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 filename = input("ชื่อไฟล์ : ")
 #Insert file name
@@ -40,8 +41,13 @@ total_unit_lis = []
 park_area_lis = []
 lat_lis = []
 long_lis = []
-
-
+fac_lis = []
+google_map_lis = []
+rec_lis = []
+prov_lis = []
+amphor_lis = []
+#tel_lis = []
+#web_lis = []
 count = 0
 for i in range(start_page,end_page+1):
     
@@ -51,7 +57,11 @@ for i in range(start_page,end_page+1):
     print(driver.page_source)
 
     soup = BeautifulSoup(driver.page_source,'html.parser')
-    
+    prov_amphor_lis = [ p.find("small").text.split(",") for p in soup.find_all('div',{'class':'card_project__head-detail'})]
+    for g in prov_amphor_lis:
+        prov_lis.append(g[1])
+        amphor_lis.append(g[0])
+    print(prov_amphor_lis)
     lis = ["https://th.zmyhome.com/"+i.find('a')['href'] for i in soup.find_all('div',{'class':'card_project__head-detail'})]
     for link in lis: 
         driver.get(link)
@@ -100,6 +110,7 @@ for i in range(start_page,end_page+1):
         print(project_detail_item_lis[8].strip())
 
         lat_long = soupx.find('div',{'id':'map'}).find('iframe')['src']
+        google_map_lis.append(lat_long)
         print(lat_long)
 
         lat_long_lis = lat_long.split(",")
@@ -110,7 +121,36 @@ for i in range(start_page,end_page+1):
         long = lat_long_lis[1]
         print("Long : ",long)
         long_lis.append(long)
-   
+        
+        try:
+            print(soupx.find('div',{'class':'facality'}))
+      
+            fac = [ i.text.strip() for i in soupx.find('div',{'class':'facality'}).find_all('span',{'class':'label'})]
+            fac_info = ",".join(fac)
+            fac_lis.append(fac_info)
+        except:
+            print("ไม่มี")
+            fac_lis.append("ไม่มี")
+
+        card_proj = [ x.text.strip() for x in soupx.find_all('div',{'class':'nearby-place__list__item'})]
+        print(card_proj)
+        card_proj_item = ",".join(card_proj)
+        rec_lis.append(card_proj_item)
+
+        viewClass = '//*[@id="contactOwner"]'
+        driver.execute_script("arguments[0].click();", WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, viewClass))))
+
+        """
+        contact_ownder_lis = soupx.find('ul',{'class':'contact-owner'}).find_all('contact-owner__list')
+        print(contact_ownder_lis)
+        tel = contact_ownder_lis[0].text
+        print(tel)
+        tel_lis.append(tel)
+
+        web = contact_ownder_lis[1].text 
+        print(web)
+        web_lis.append(web)
+        """
 
     print(lis)
 
@@ -133,6 +173,14 @@ df['ยูนิตทั้งหมด'] = total_unit_lis
 df['พื้นที่จอดรถ'] = park_area_lis 
 df['Latitude'] = lat_lis 
 df['Longtitude'] = long_lis
+df['Facility'] = fac_lis 
+df['Google Map'] = google_map_lis
+df['สถานที่ใกล้เคียง'] = rec_lis 
+df['เขต'] = amphor_lis 
+df['จังหวัด'] = prov_lis 
+#df['Web'] = web_lis
+#df['โทร'] = tel_lis
+
 
 df.to_excel(filename)
 
