@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
 
 filename = input("ชื่อไฟล์ : ")
 #Insert file name
@@ -24,7 +25,7 @@ keyword = "https://th.zmyhome.com/project/condo?page={}&sortFilter=yearnew&per-p
 page = []
 
 #Get bot selenium make sure you can access google chrome
-driver = webdriver.Chrome(ChromeDriverManager().install())
+driver = webdriver.Chrome(service= Service(ChromeDriverManager().install()))
 
 
 title_lis = []
@@ -51,7 +52,7 @@ amphor_lis = []
 count = 0
 for i in range(start_page,end_page+1):
     
-    url = "https://th.zmyhome.com/project/condo?page={}&sortFilter=yearnew&per-page=40".format(start_page,end_page)
+    url = "https://th.zmyhome.com/project/condo?page={}&sortFilter=yearnew&per-page=10".format(start_page,end_page)
     
     driver.get(url)
     print(driver.page_source)
